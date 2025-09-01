@@ -14,7 +14,7 @@ import {
   Book,
   Clock,
   Trophy,
-  ArrowBigRight
+  ArrowBigRight,
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
@@ -311,15 +311,16 @@ const Dashboard = () => {
               </table>
             </div>
           </div>
-
+        </div>
+        <div className="graphs my-5">
           <GraphFilter
-        selectedGraph={selectedGraph}
-        setSelectedGraph={setSelectedGraph}
-        groupedAttempts={groupedAttempts}
-      />
+            selectedGraph={selectedGraph}
+            setSelectedGraph={setSelectedGraph}
+            groupedAttempts={groupedAttempts}
+          />
 
           {/* ✅ Graph Rendering */}
-          <div className="col-span-1">
+          <div className="col-span-1 my-5">
             {(() => {
               const entries = Object.entries(groupedAttempts);
 
