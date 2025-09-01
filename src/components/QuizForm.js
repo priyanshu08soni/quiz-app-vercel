@@ -35,8 +35,19 @@ const QuizForm = () => {
   };
 
   const updateChoice = (index, text, isCorrect) => {
-    const newChoices = [...choices];
-    newChoices[index] = { text, isCorrect };
+    let newChoices = [...choices];
+  
+    if (isCorrect) {
+      // Ensure only one choice can be correct
+      newChoices = newChoices.map((c, i) => ({
+        ...c,
+        isCorrect: i === index, // only the clicked one is true
+      }));
+    } else {
+      // if unchecked, just update text/isCorrect
+      newChoices[index] = { text, isCorrect };
+    }
+  
     setChoices(newChoices);
   };
 
