@@ -14,11 +14,12 @@ import {
   Book,
   Clock,
   Trophy,
-  ArrowBigRight,
+  ArrowBigRight
 } from "lucide-react";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
 import GraphFilter from "../components/GraphFilter";
+import { API_PATHS } from "../utils";
 
 const Dashboard = () => {
   const [attempts, setAttempts] = useState([]);
@@ -37,9 +38,7 @@ const Dashboard = () => {
 
   const handleQuizDetails = async (id) => {
     try {
-      const response = await fetch(
-        `https://quiz-app-imh9.onrender.com/quizzes/quiz-attempt/${id}`
-      );
+      const response = await fetch(API_PATHS.QUIZ.QUIZ_ATTEMPT);
       if (!response.ok) throw new Error(`Fetching failed: ${response.status}`);
       const result = await response.json();
       navigate(`/quizzes/${id}/answers`, { state: { attempt: result } });
@@ -55,9 +54,7 @@ const Dashboard = () => {
         return;
       }
       try {
-        const response = await fetch(
-          `https://quiz-app-imh9.onrender.com/quizzes/quiz-attempts/${userId}`
-        );
+        const response = await fetch(API_PATHS.QUIZ.QUIZ_ATTEMPTS_ALL);
         const data = await response.json();
         setAttempts(data.attempts);
         setFilteredAttempts(data.attempts);
@@ -311,16 +308,15 @@ const Dashboard = () => {
               </table>
             </div>
           </div>
-        </div>
-        <div className="graphs my-5">
+
           <GraphFilter
-            selectedGraph={selectedGraph}
-            setSelectedGraph={setSelectedGraph}
-            groupedAttempts={groupedAttempts}
-          />
+        selectedGraph={selectedGraph}
+        setSelectedGraph={setSelectedGraph}
+        groupedAttempts={groupedAttempts}
+      />
 
           {/* ✅ Graph Rendering */}
-          <div className="col-span-1 my-5">
+          <div className="col-span-1">
             {(() => {
               const entries = Object.entries(groupedAttempts);
 

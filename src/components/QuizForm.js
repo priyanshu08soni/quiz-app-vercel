@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Edit, PlusCircle, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { API_PATHS } from "../utils";
 
 const QuizForm = () => {
   const [title, setTitle] = useState("");
@@ -35,19 +36,8 @@ const QuizForm = () => {
   };
 
   const updateChoice = (index, text, isCorrect) => {
-    let newChoices = [...choices];
-  
-    if (isCorrect) {
-      // Ensure only one choice can be correct
-      newChoices = newChoices.map((c, i) => ({
-        ...c,
-        isCorrect: i === index, // only the clicked one is true
-      }));
-    } else {
-      // if unchecked, just update text/isCorrect
-      newChoices[index] = { text, isCorrect };
-    }
-  
+    const newChoices = [...choices];
+    newChoices[index] = { text, isCorrect };
     setChoices(newChoices);
   };
 
@@ -64,7 +54,7 @@ const QuizForm = () => {
 
     setLoading(true);
     try {
-      const response = await fetch(`https://quiz-app-imh9.onrender.com/quizzes`, {
+      const response = await fetch(API_PATHS.QUIZ.CREATE_QUIZ, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ title, description, questions }),
