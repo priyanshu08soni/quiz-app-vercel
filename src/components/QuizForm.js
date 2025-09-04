@@ -17,11 +17,16 @@ const QuizForm = () => {
 
   const addQuestion = () => {
     if (!questionText || choices.length < 2 || points <= 0) {
-      toast.error("Please enter a valid question, at least two choices, and points.");
+      toast.error(
+        "Please enter a valid question, at least two choices, and points."
+      );
       return;
     }
 
-    setQuestions([...questions, { questionText, choices, points: Number(points) }]);
+    setQuestions([
+      ...questions,
+      { questionText, choices, points: Number(points) },
+    ]);
     setQuestionText("");
     setChoices([{ text: "", isCorrect: false }]);
     setPoints("");
@@ -48,15 +53,21 @@ const QuizForm = () => {
   const handleQuizCreation = async (e) => {
     e.preventDefault();
     if (!title || !description || questions.length === 0) {
-      toast.error("Title, description, and at least one question are required.");
+      toast.error(
+        "Title, description, and at least one question are required."
+      );
       return;
     }
 
     setLoading(true);
     try {
+      const token = localStorage.getItem("token");
       const response = await fetch(API_PATHS.QUIZ.CREATE_QUIZ, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // <-- important
+        },
         body: JSON.stringify({ title, description, questions }),
       });
 
@@ -122,17 +133,24 @@ const QuizForm = () => {
               placeholder={`Choice ${index + 1}`}
               className="border p-2 rounded w-full"
               value={choice.text}
-              onChange={(e) => updateChoice(index, e.target.value, choice.isCorrect)}
+              onChange={(e) =>
+                updateChoice(index, e.target.value, choice.isCorrect)
+              }
             />
             <input
               type="checkbox"
               checked={choice.isCorrect}
-              onChange={(e) => updateChoice(index, choice.text, e.target.checked)}
+              onChange={(e) =>
+                updateChoice(index, choice.text, e.target.checked)
+              }
             />
           </div>
         ))}
 
-        <button onClick={addChoice} className="text-primary flex items-center gap-1 mt-2">
+        <button
+          onClick={addChoice}
+          className="text-primary flex items-center gap-1 mt-2"
+        >
           <PlusCircle size={18} /> Add Choice
         </button>
 
@@ -197,7 +215,9 @@ const QuizForm = () => {
           onClick={handleQuizCreation}
           disabled={loading}
           className={`px-6 py-2 rounded-full text-white ${
-            loading ? "bg-gray-400 cursor-not-allowed" : "bg-primary hover:bg-primary/90"
+            loading
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-primary hover:bg-primary/90"
           } transition`}
         >
           {loading ? "Creating Quiz..." : "Create Quiz"}

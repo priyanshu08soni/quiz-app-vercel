@@ -38,7 +38,14 @@ const Dashboard = () => {
 
   const handleQuizDetails = async (id) => {
     try {
-      const response = await fetch(API_PATHS.QUIZ.QUIZ_ATTEMPT);
+      const token = localStorage.getItem("token");
+      const response = await fetch(API_PATHS.QUIZ.QUIZ_ATTEMPT(id),  {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        }
+      });
       if (!response.ok) throw new Error(`Fetching failed: ${response.status}`);
       const result = await response.json();
       navigate(`/quizzes/${id}/answers`, { state: { attempt: result } });
@@ -54,7 +61,14 @@ const Dashboard = () => {
         return;
       }
       try {
-        const response = await fetch(API_PATHS.QUIZ.QUIZ_ATTEMPTS_ALL);
+        const token = localStorage.getItem("token");
+        const response = await fetch(API_PATHS.QUIZ.QUIZ_ATTEMPTS_ALL(userId),  {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          }
+        });
         const data = await response.json();
         setAttempts(data.attempts);
         setFilteredAttempts(data.attempts);

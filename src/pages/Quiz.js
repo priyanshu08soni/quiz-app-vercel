@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { toast } from 'sonner';
-import Navbar from '../components/Navbar';
-import { API_PATHS } from '../utils';
-
-
+import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import Navbar from "../components/Navbar";
+import { API_PATHS } from "../utils";
 
 const Quiz = () => {
   const { id } = useParams();
@@ -18,7 +16,14 @@ const Quiz = () => {
   useEffect(() => {
     const fetchQuiz = async () => {
       try {
-        const response = await fetch(API_PATHS.QUIZ.GET_QUIZ);
+        const token = localStorage.getItem("token");
+        const response = await fetch(API_PATHS.QUIZ.GET_QUIZ(id), {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
         const data = await response.json();
         if (data && data.success && data.quiz) {
@@ -27,7 +32,7 @@ const Quiz = () => {
           throw new Error("Invalid response format");
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'An error occurred');
+        setError(err instanceof Error ? err.message : "An error occurred");
       } finally {
         setLoading(false);
       }
@@ -36,7 +41,7 @@ const Quiz = () => {
   }, [id]);
 
   const handleAnswerChange = (questionIndex, choiceIndex) => {
-    setAnswers(prev => ({ ...prev, [questionIndex]: choiceIndex }));
+    setAnswers((prev) => ({ ...prev, [questionIndex]: choiceIndex }));
   };
 
   const handleSubmit = async () => {
@@ -54,28 +59,48 @@ const Quiz = () => {
     };
 
     try {
-      const response = await fetch(API_PATHS.QUIZ.QUIZ_SUBMIT , {
+      const token = localStorage.getItem("token");
+      const response = await fetch(API_PATHS.QUIZ.QUIZ_SUBMIT, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(attempt),
       });
 
-      if (!response.ok) throw new Error(`Submission failed: ${response.status}`);
+      if (!response.ok)
+        throw new Error(`Submission failed: ${response.status}`);
       const result = await response.json();
       navigate(`/quizzes/${id}/answers`, { state: { attempt: result } });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-      toast.error('Failed to submit quiz');
+      setError(err instanceof Error ? err.message : "An error occurred");
+      toast.error("Failed to submit quiz");
     }
   };
 
-  if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
-  if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">Error: {error}</div>;
-  if (!quiz) return <div className="flex justify-center items-center min-h-screen">No quiz found.</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        Loading...
+      </div>
+    );
+  if (error)
+    return (
+      <div className="flex justify-center items-center min-h-screen text-red-500">
+        Error: {error}
+      </div>
+    );
+  if (!quiz)
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        No quiz found.
+      </div>
+    );
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-20">
-      <Navbar/>
+      <Navbar />
       <div className="bg-white shadow-lg rounded-lg p-6">
         <h2 className="text-2xl font-bold text-gray-900 mb-2">{quiz.title}</h2>
         <p className="text-gray-600 mb-8">{quiz.description}</p>
@@ -84,11 +109,15 @@ const Quiz = () => {
           {quiz.questions.map((question, qIndex) => (
             <div key={qIndex} className="bg-gray-50 p-6 rounded-lg">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                {question.questionText} <span className="text-primary">({question.points} pts)</span>
+                {question.questionText}{" "}
+                <span className="text-primary">({question.points} pts)</span>
               </h3>
               <div className="space-y-3">
                 {question.choices.map((choice, cIndex) => (
-                  <label key={cIndex} className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors">
+                  <label
+                    key={cIndex}
+                    className="flex items-center space-x-3 p-3 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors"
+                  >
                     <input
                       type="radio"
                       name={`question-${qIndex}`}

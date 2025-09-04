@@ -10,29 +10,39 @@ const Quizzes = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchQuizzes = async () => {
-      try {
-        const response = await fetch(API_PATHS.QUIZ.GET_ALL_QUIZZES);
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        const data = await response.json();
+  const fetchQuizzes = async () => {
+    try {
+      const token = localStorage.getItem("token"); // Or however you store it
 
-        if (Array.isArray(data)) {
-          setQuizzes(data);
-        } else if (data.quizzes && Array.isArray(data.quizzes)) {
-          setQuizzes(data.quizzes);
-        } else {
-          throw new Error("Invalid response format");
-        }
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
-        toast.error("Failed to load quizzes");
-      } finally {
-        setLoading(false);
+      const response = await fetch(API_PATHS.QUIZ.GET_ALL_QUIZZES, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // <-- important
+        },
+      });
+
+      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        setQuizzes(data);
+      } else if (data.quizzes && Array.isArray(data.quizzes)) {
+        setQuizzes(data.quizzes);
+      } else {
+        throw new Error("Invalid response format");
       }
-    };
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "An error occurred");
+      toast.error("Failed to load quizzes");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchQuizzes();
-  }, []);
+  fetchQuizzes();
+}, []);
+
 
   if (loading)
     return (
