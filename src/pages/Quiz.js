@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import Navbar from "../components/Navbar";
-import { API_PATHS } from "../utils";
+import { fetchQuizById, submitQuizAttempt } from "../api/quizzes";
 
 const Quiz = () => {
   const { id } = useParams();
@@ -13,19 +13,11 @@ const Quiz = () => {
   const [error, setError] = useState("");
   const userId = localStorage.getItem("userId");
 
+  // ✅ Fetch quiz by ID
   useEffect(() => {
-    const fetchQuiz = async () => {
+    const loadQuiz = async () => {
       try {
-        const token = localStorage.getItem("token");
-        const response = await fetch(API_PATHS.QUIZ.GET_QUIZ(id), {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-        const data = await response.json();
+        const data = await fetchQuizById(id);
         if (data && data.success && data.quiz) {
           setQuiz(data.quiz);
         } else {
@@ -37,18 +29,19 @@ const Quiz = () => {
         setLoading(false);
       }
     };
-    fetchQuiz();
+    loadQuiz();
   }, [id]);
 
   const handleAnswerChange = (questionIndex, choiceIndex) => {
     setAnswers((prev) => ({ ...prev, [questionIndex]: choiceIndex }));
   };
 
+  // ✅ Submit quiz attempt
   const handleSubmit = async () => {
     if (!quiz) return;
 
     const attempt = {
-      userId: userId,
+      userId,
       quizId: id,
       responses: quiz.questions.map((q, index) => ({
         question: q.questionText,
@@ -59,19 +52,7 @@ const Quiz = () => {
     };
 
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(API_PATHS.QUIZ.QUIZ_SUBMIT, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(attempt),
-      });
-
-      if (!response.ok)
-        throw new Error(`Submission failed: ${response.status}`);
-      const result = await response.json();
+      const result = await submitQuizAttempt(attempt);
       navigate(`/quizzes/${id}/answers`, { state: { attempt: result } });
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -79,25 +60,9 @@ const Quiz = () => {
     }
   };
 
-  if (loading)
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        Loading...
-      </div>
-    );
-  if (error)
-    return (
-      <div className="flex justify-center items-center min-h-screen text-red-500">
-        Error: {error}
-      </div>
-    );
-  if (!quiz)
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        No quiz found.
-      </div>
-    );
-
+  if (loading) return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+  if (error) return <div className="flex justify-center items-center min-h-screen text-red-500">Error: {error}</div>;
+  if (!quiz) return <div className="flex justify-center items-center min-h-screen">No quiz found.</div>;
   return (
     <div className="max-w-3xl mx-auto px-4 py-20">
       <Navbar />

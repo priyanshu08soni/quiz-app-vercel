@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Edit, PlusCircle, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { API_PATHS } from "../utils";
+import { createQuiz } from "../api/quizzes"; // ✅ use API
 
 const QuizForm = () => {
   const [title, setTitle] = useState("");
@@ -61,17 +61,7 @@ const QuizForm = () => {
 
     setLoading(true);
     try {
-      const token = localStorage.getItem("token");
-      const response = await fetch(API_PATHS.QUIZ.CREATE_QUIZ, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // <-- important
-        },
-        body: JSON.stringify({ title, description, questions }),
-      });
-
-      const result = await response.json();
+      const result = await createQuiz({ title, description, questions });
       const { success, message } = result;
 
       if (success) {
@@ -80,8 +70,12 @@ const QuizForm = () => {
       } else {
         toast.error("Failed to create quiz: " + (message || "Unknown error"));
       }
-    } catch {
-      toast.error("An error occurred while creating the quiz!");
+    } catch (err) {
+      toast.error(
+        err instanceof Error
+          ? err.message
+          : "An error occurred while creating the quiz!"
+      );
     } finally {
       setLoading(false);
     }

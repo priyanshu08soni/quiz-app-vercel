@@ -3,46 +3,28 @@ import { toast } from "sonner";
 import Navbar from "../components/Navbar";
 import { BookCopy } from "lucide-react";
 import QuizzesCard from "../components/QuizzesCard";
-import { API_PATHS } from "../utils";
+import { getAllQuizzes } from "../api/quizzes"; // 👈 imported
+
 const Quizzes = () => {
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
-  const fetchQuizzes = async () => {
-    try {
-      const token = localStorage.getItem("token"); // Or however you store it
-
-      const response = await fetch(API_PATHS.QUIZ.GET_ALL_QUIZZES, {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`, // <-- important
-        },
-      });
-
-      if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-      const data = await response.json();
-
-      if (Array.isArray(data)) {
-        setQuizzes(data);
-      } else if (data.quizzes && Array.isArray(data.quizzes)) {
-        setQuizzes(data.quizzes);
-      } else {
-        throw new Error("Invalid response format");
+    const fetchQuizzes = async () => {
+      try {
+        const quizzesData = await getAllQuizzes(); // 👈 use API
+        setQuizzes(quizzesData);
+      } catch (err) {
+        setError(err.message || "An error occurred");
+        toast.error("Failed to load quizzes");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-      toast.error("Failed to load quizzes");
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchQuizzes();
-}, []);
-
+    fetchQuizzes();
+  }, []);
 
   if (loading)
     return (
@@ -50,6 +32,7 @@ const Quizzes = () => {
         Loading...
       </div>
     );
+
   if (error)
     return (
       <div className="flex justify-center items-center min-h-screen text-red-500">
@@ -61,7 +44,7 @@ const Quizzes = () => {
     <div className="min-h-screen bg-gray-50 py-20">
       <Navbar />
       <section className="container mx-auto">
-        <div className="flex items-center gap-4 mb-8" >
+        <div className="flex items-center gap-4 mb-8">
           <BookCopy className="h-8 w-8 text-primary" />
           <h2 className="text-3xl font-bold text-gray-900">Available Quizzes</h2>
         </div>
@@ -71,9 +54,9 @@ const Quizzes = () => {
             <QuizzesCard
               key={quiz._id}
               icon={BookCopy}
-              title = {quiz.title}
+              title={quiz.title}
               description={quiz.description}
-              quizId= {quiz._id}
+              quizId={quiz._id}
             />
           ))}
         </div>
